@@ -39,7 +39,7 @@ class Chef
         Chef::Knife::Bootstrap.load_deps
       end
 
-      banner "knife ec2 server create (options)"
+      banner "ALTIS knife ec2 server create (options)"
 
       attr_accessor :initial_sleep_delay
       attr_reader :server
@@ -577,7 +577,7 @@ class Chef
           protocol ||= 'winrm'
           if protocol == 'winrm'
             load_winrm_deps
-            print "\n#{ui.color("Waiting for winrm access to become available", :magenta)}"
+            print "\n#{ui.color("Altis - Waiting for winrm access to become available", :magenta)}"
             print(".") until tcp_test_winrm(ssh_connect_host, locate_config_value(:winrm_port)) {
               sleep 10
               puts("done")
@@ -1381,6 +1381,7 @@ EOH
       end
 
       def check_windows_password_available(server_id)
+		sleep 30 #ALTIS - Exponential backout required to prevent connection.get_password_data being called constantly
         response = connection.get_password_data(server_id)
         if not response.body["passwordData"]
           return false
@@ -1391,9 +1392,9 @@ EOH
       def windows_password
         if not locate_config_value(:winrm_password)
           if locate_config_value(:identity_file)
-            print "\n#{ui.color("Waiting for Windows Admin password to be available", :magenta)}"
-            print(".") until check_windows_password_available(@server.id) {
-              sleep 1000 #typically is available after 30 mins
+            print "\n#{ui.color("Altis - Waiting for Windows Admin password to be available", :magenta)}"
+            print(".Altis") until check_windows_password_available(@server.id) {
+              sleep 30 #typically is available after 30 seconds
               puts("done")
             }
             response = connection.get_password_data(@server.id)
